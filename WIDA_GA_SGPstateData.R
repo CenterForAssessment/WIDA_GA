@@ -73,4 +73,4 @@ SGPstateData[["WIDA_GA"]][["SGP_Configuration"]] <- list(
   sgp.target.types=c("Scale_Score_Targets_CUKU", "Scale_Score_Targets_Current_CUKU"))
 
 load("Baseline_Coefficient_Matrices/WIDA/WIDA_Baseline_Matrices.Rdata")
-SGPstateData[["WIDA"]][["Baseline_splineMatrix"]][["Coefficient_Matrices"]] <- WIDA_Baseline_Matrices
+SGPstateData[["WIDA_GA"]][["Baseline_splineMatrix"]][["Coefficient_Matrices"]] <- WIDA_Baseline_Matrices
