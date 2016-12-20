@@ -4,10 +4,9 @@
 ##########################################################################################
 
 load("U:/DATA/SGP/ACCESS SGP/WIDA_Knots_Boundaries.Rdata")
-#SGPstateData[["WIDA_GA"]][["Achievement"]][["Knots_Boundaries"]] <- WIDA_MA_Knots_Boundaries
-ls()
+SGPstateData[["WIDA_GA"]][["Achievement"]][["Knots_Boundaries"]] <- WIDA_MA_Knots_Boundaries
 
-WIDA_Knots_Boundaries
+
 
 SGPstateData[["WIDA_GA"]][["Achievement"]][["Cutscores"]] <- list(
   READING =list(
