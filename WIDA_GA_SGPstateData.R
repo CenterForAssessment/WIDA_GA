@@ -4,7 +4,7 @@
 ##########################################################################################
 
 load("U:/DATA/SGP/ACCESS SGP/WIDA_Knots_Boundaries.Rdata")
-SGPstateData[["WIDA_GA"]][["Achievement"]][["Knots_Boundaries"]] <- WIDA_MA_Knots_Boundaries
+SGPstateData[["WIDA_GA"]][["Achievement"]][["Knots_Boundaries"]] <- WIDA_GA_Knots_Boundaries  ##I will update the knots and Boundaries for GA
 
 
 
