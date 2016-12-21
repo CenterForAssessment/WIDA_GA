@@ -8,7 +8,7 @@
 
 require(SGP)
 options(error=recover)
-options(warn=2)
+#options(warn=2)
 
 
 ### Load Data
