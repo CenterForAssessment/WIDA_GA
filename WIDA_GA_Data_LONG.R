@@ -37,11 +37,20 @@ WIDA_GA_Data_LONG[,SCALE_SCORE := as.numeric(WIDA_GA_Data_LONG$SCALE_SCORE)]
 WIDA_GA_Data_LONG[,ACHIEVEMENT_LEVEL := as.character(WIDA_GA_Data_LONG$PROF_LEVEL)]
 WIDA_GA_Data_LONG[PROF_LEVEL %in% c("", " NA", "A1", "A2", "A3", "P1", "P2"), ACHIEVEMENT_LEVEL := NA]
 WIDA_GA_Data_LONG[,ACHIEVEMENT_LEVEL := strhead(ACHIEVEMENT_LEVEL, 1)]
+WIDA_GA_Data_LONG[!is.na(ACHIEVEMENT_LEVEL),ACHIEVEMENT_LEVEL := paste("WIDA Level", ACHIEVEMENT_LEVEL)]
 
 
 ### Invalidate Cases with Scale Score out of Range (PROF_LEVEL in c("", " NA", "A1", "A2", "A3", "P1", "P2"))
 
 WIDA_GA_Data_LONG[PROF_LEVEL %in% c("", " NA", "A1", "A2", "A3", "P1", "P2"), VALID_CASE := "INVALID_CASE"]
+
+
+### Check for duplicates
+
+setkey(WIDA_GA_Data_LONG, VALID_CASE, CONTENT_AREA, YEAR, ID, GRADE, SCALE_SCORE)
+setkey(WIDA_GA_Data_LONG, VALID_CASE, CONTENT_AREA, YEAR, ID)
+WIDA_GA_Data_LONG[which(duplicated(WIDA_GA_Data_LONG, by=key(WIDA_GA_Data_LONG)))-1, VALID_CASE := "INVALID_CASE"]
+setkey(WIDA_GA_Data_LONG, VALID_CASE, CONTENT_AREA, YEAR, ID)
 
 
 ### Reorder
