@@ -1,4 +1,4 @@
-# WIDA Georgia
+WIDA Georgia
 =============
 
 SGP analysis source code & documentation
