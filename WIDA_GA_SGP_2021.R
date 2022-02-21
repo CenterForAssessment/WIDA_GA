@@ -1,6 +1,6 @@
 ################################################################################
 ###                                                                          ###
-###           Script for calculating SGPs for 2021 for WIDA-ACCESS           ###
+###       Script for calculating SGPs for 2021 (& 2020) for WIDA-ACCESS      ###
 ###                                                                          ###
 ################################################################################
 
@@ -17,6 +17,7 @@ SGPstateData <- SGPmatrices::addBaselineMatrices("WIDA", year="2021", add.matric
 ###   Run updateSGP to produce cohort referrenced SGPs, etc.
 WIDA_GA_SGP <- abcSGP(
 		sgp_object = WIDA_GA_Data_LONG,
+		years = c("2020", "2021"),
 		steps=c("prepareSGP", "analyzeSGP", "combineSGP", "visualizeSGP", "outputSGP"),
 		sgp.percentiles=TRUE,
 		sgp.projections=TRUE,
