@@ -1,6 +1,6 @@
 ###############################################################################
 ###                                                                         ###
-###         Script to calculate SGPs for 2020-21 Georgia WIDA-ACCESS        ###
+###          Script to calculate SGPs for 2022 Georgia WIDA-ACCESS          ###
 ###                                                                         ###
 ###############################################################################
 
@@ -8,26 +8,21 @@
 require(SGP)
 require(data.table)
 
-###   Load Data
-load("Data/WIDA_GA_Data_LONG.Rdata")
+###   Load SGP object from 2021 analyses and 2022 cleaned/prepped long data
+load("Data/WIDA_GA_SGP.Rdata")
+load("Data/WIDA_GA_Data_LONG_2022.Rdata")
 
 ###   Add baseline matrices to `SGPstateData`
 SGPstateData <- SGPmatrices::addBaselineMatrices(
-                                "WIDA", year = "2021",
-                                add.matrices.to.which.state = "WIDA_GA")
+                               "WIDA", year = "2021",
+                               add.matrices.to.which.state = "WIDA_GA")
 
-###   Run abcSGP to produce cohort and baseline referrenced SGPs, etc.
-WIDA_GA_SGP <- abcSGP(
-        sgp_object = WIDA_GA_Data_LONG,
-        years = c("2020", "2021"),
+###   Run updateSGP to produce cohort and baseline referrenced SGPs, etc.
+WIDA_GA_SGP <- updateSGP(
+        what_sgp_object = WIDA_GA_SGP,
+        with_sgp_data_LONG = WIDA_GA_Data_LONG_2022,
         steps = c("prepareSGP", "analyzeSGP",
                   "combineSGP", "visualizeSGP", "outputSGP"),
-        sgp.percentiles = TRUE,
-        sgp.projections = TRUE,
-        sgp.projections.lagged = TRUE,
-        sgp.percentiles.baseline = TRUE,
-        sgp.projections.baseline = TRUE,
-        sgp.projections.lagged.baseline = TRUE,
         sgp.target.scale.scores = TRUE,
         plot.types = "growthAchievementPlot",
         outputSGP.output.type = c("LONG_Data", "LONG_FINAL_YEAR_Data"),
@@ -35,10 +30,10 @@ WIDA_GA_SGP <- abcSGP(
         parallel.config = list(
             BACKEND = "PARALLEL",
             WORKERS = list(
-                PERCENTILES = 8,
-                PROJECTIONS = 4,
-                LAGGED_PROJECTIONS = 2,
-                SGP_SCALE_SCORE_TARGETS = 2)))
+                PERCENTILES = 12,
+                PROJECTIONS = 6,
+                LAGGED_PROJECTIONS = 4,
+                SGP_SCALE_SCORE_TARGETS = 4)))
 
 ###   Save results
 save(WIDA_GA_SGP, file = "Data/WIDA_GA_SGP.Rdata")

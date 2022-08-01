@@ -1,8 +1,8 @@
-################################################################################
-###                                                                          ###
-###          Formatted text output for WIDA_GA from 2021 long data           ###
-###                                                                          ###
-################################################################################
+###############################################################################
+###                                                                         ###
+###          Formatted text output for WIDA_GA from 2021 long data          ###
+###                                                                         ###
+###############################################################################
 
 require(data.table)
 require(cfaTools)
@@ -25,19 +25,26 @@ load("Data/WIDA_GA_SGP_LONG_Data.Rdata")
 #    typical, high).
 
 ###   Check SGP_LEVEL (c.)
-# WIDA_GA_SGP_LONG_Data[!is.na(SGP), .(MIN = min(SGP), MAX = max(SGP)), keyby = c("GRADE", "SGP_LEVEL")]
-# WIDA_GA_SGP_LONG_Data[!is.na(SGP_BASELINE), .(MIN = min(SGP_BASELINE), MAX = max(SGP_BASELINE)), keyby = c("GRADE", "SGP_LEVEL_BASELINE")]
+# WIDA_GA_SGP_LONG_Data[!is.na(SGP),
+#                           .(MIN = min(SGP), MAX = max(SGP)),
+#                       keyby = c("GRADE", "SGP_LEVEL")]
+# WIDA_GA_SGP_LONG_Data[!is.na(SGP_BASELINE),
+#                           .(MIN = min(SGP_BASELINE), MAX = max(SGP_BASELINE)),
+#                       keyby = c("GRADE", "SGP_LEVEL_BASELINE")]
 
 ###   Remove level 4.3 from current and lagged variables (b.)
-# table(WIDA_GA_SGP_LONG_Data[, ACHIEVEMENT_LEVEL, ACHIEVEMENT_LEVEL_ORIGINAL])
 WIDA_GA_SGP_LONG_Data[ACHIEVEMENT_LEVEL == "Level 4.3", ACHIEVEMENT_LEVEL := "Level 4"]
 WIDA_GA_SGP_LONG_Data[ACHIEVEMENT_LEVEL_PRIOR == "Level 4.3", ACHIEVEMENT_LEVEL_PRIOR := "Level 4"]
+# table(WIDA_GA_SGP_LONG_Data[, ACHIEVEMENT_LEVEL, ACHIEVEMENT_LEVEL_ORIGINAL])
 
-# table(WIDA_GA_SGP_LONG_Data[, SCALE_SCORE_PRIOR == SCALE_SCORE_PRIOR_BASELINE], exclude = NULL)
-# table(WIDA_GA_SGP_LONG_Data[, SCALE_SCORE_PRIOR_STANDARDIZED == SCALE_SCORE_PRIOR_STANDARDIZED_BASELINE])
+###   Remove "BASELINE" Prior Scale Scores (redundant)
+# table(WIDA_GA_SGP_LONG_Data[,
+#     SCALE_SCORE_PRIOR == SCALE_SCORE_PRIOR_BASELINE], exclude = NULL)
+# table(WIDA_GA_SGP_LONG_Data[,
+#     SCALE_SCORE_PRIOR_STANDARDIZED == SCALE_SCORE_PRIOR_STANDARDIZED_BASELINE],
+#     exclude = NULL)
 WIDA_GA_SGP_LONG_Data[, SCALE_SCORE_PRIOR_BASELINE := NULL]
 WIDA_GA_SGP_LONG_Data[, SCALE_SCORE_PRIOR_STANDARDIZED_BASELINE := NULL]
-
 
 ###   Create requested lagged variables (a.)
 
@@ -57,7 +64,7 @@ setkeyv(WIDA_GA_SGP_LONG_Data, shift.key)
 TMP_INVALID_CASES <- WIDA_GA_SGP_LONG_Data[VALID_CASE == "INVALID_CASE"]
 WIDA_GA_SGP_LONG_Data <- WIDA_GA_SGP_LONG_Data[VALID_CASE == "VALID_CASE"]
 
-getShiftedValues(WIDA_GA_SGP_LONG_Data, shift_amount = c(1L, 2L), # 1L, # 
+getShiftedValues(WIDA_GA_SGP_LONG_Data, shift_amount = c(1L, 2L),
     shift_variable = c("YEAR", "GRADE", "ACHIEVEMENT_LEVEL_ORIGINAL"))
 
 #  Clean up - rename according to old conventions
@@ -78,24 +85,23 @@ WIDA_GA_SGP_LONG_Data[, VC := NULL]
 
 ###   Add in CURRENT Projections
 
-my.variable.names <- c("ID", "GRADE",
-                       "LEVEL_4_SGP_TARGET_YEAR_1_CURRENT",
-                       "P1_PROJ_YEAR_1_CURRENT", "P35_PROJ_YEAR_1_CURRENT", 
-                       "P66_PROJ_YEAR_1_CURRENT", "P99_PROJ_YEAR_1_CURRENT")
+proj.var.names <- c("ID", "GRADE",
+                    "LEVEL_4_SGP_TARGET_YEAR_1_CURRENT",
+                    "P1_PROJ_YEAR_1_CURRENT", "P35_PROJ_YEAR_1_CURRENT",
+                    "P66_PROJ_YEAR_1_CURRENT", "P99_PROJ_YEAR_1_CURRENT")
 
 tmp.list.current <- list()
 
 my.projection.table.names <- c("READING.2020", "READING.2021")
 for (i in my.projection.table.names) {
-	tmp.list.current[[i]] <- data.table(
-			VALID_CASE="VALID_CASE",
-			# CONTENT_AREA=unlist(strsplit(i, "\\."))[1], # All == "READING"
-			YEAR=unlist(strsplit(i, "\\."))[2],
-			WIDA_GA_SGP@SGP$SGProjections[[i]][, my.variable.names, with=FALSE])
+    tmp.list.current[[i]] <- data.table(
+            VALID_CASE = "VALID_CASE",
+            YEAR = unlist(strsplit(i, "\\."))[2],
+            WIDA_GA_SGP@SGP$SGProjections[[i]][, proj.var.names, with = FALSE])
 }
 
 ###  Merge projection/target data in.
-tmp.projections.c <- data.table(rbindlist(tmp.list.current), key=c("ID", "GRADE"))
+tmp.projections.c <- data.table(rbindlist(tmp.list.current), key = c("ID", "GRADE"))
 
 pctl.names <- names(WIDA_GA_SGP_LONG_Data)
 pjct.names <- names(tmp.projections.c)
@@ -128,12 +134,12 @@ setnames(WIDA_GA_SGP_LONG_Data,
          wida.ga.names)
 
 prior.cpl.names <- grep("ACHIEVEMENT_LEVEL_ORIGINAL", names(WIDA_GA_SGP_LONG_Data), value = TRUE)
-setnames(WIDA_GA_SGP_LONG_Data, 
+setnames(WIDA_GA_SGP_LONG_Data,
          c(prior.cpl.names, "YEAR_PRIOR_1_YEAR", "YEAR_PRIOR_2_YEAR", "GRADE_PRIOR_1_YEAR", "GRADE_PRIOR_2_YEAR"),
          c(gsub("ACHIEVEMENT_LEVEL_ORIGINAL", "CompositeOverallProficiencyLevel", prior.cpl.names),
            "SCHOOL_YEAR_PRIOR_1_YEAR", "SCHOOL_YEAR_PRIOR_2_YEAR", "Grade_PRIOR_1_YEAR", "Grade_PRIOR_2_YEAR"))
 
-setnames(WIDA_GA_SGP_LONG_Data, 
+setnames(WIDA_GA_SGP_LONG_Data,
         "LEVEL_4_SGP_TARGET_YEAR_1_CURRENT",
         "MIN_EXIT_CRITERIA_SGP_TARGET_YEAR_1_CURRENT")
 
