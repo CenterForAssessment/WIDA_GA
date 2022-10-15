@@ -1,8 +1,29 @@
+#+ include = FALSE, purl = FALSE
 ###############################################################################
 ###                                                                         ###
 ###              Data preparation script for 2022 WIDA GA data              ###
 ###                                                                         ###
 ###############################################################################
+
+#' ## Data Preparation
+#' 
+#' The data preparation step involves taking data provided by the GaDOE and
+#' producing a `.Rdata` file that will subsequently be analyzed using the `SGP`
+#' software. This process is carried out annually as new data becomes available
+#' from the WIDA ACCESS assessment program.
+
+#' For the 2022 Georgia WIDA ACCESS data preparation and cleaning, we subset
+#' the raw data to include only the variables that are relevant to the SGP
+#' analyses. These variables were then renamed to conform to the `SGP` package
+#' conventions.
+#'
+#' Invalid records were identified based on the following criteria:
+#'
+#' * Cases with incorrect student ID form factors (e.g., fewer than 10 characters)
+#' * Students with duplicate records. In these instances, a student's highest
+#'   scale score is retained as the "valid" case in the analyses.
+
+#+ include = FALSE, purl = FALSE, eval = FALSE
 
 ### Load Packages
 require(SGP)
