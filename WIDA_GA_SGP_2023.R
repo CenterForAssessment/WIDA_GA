@@ -1,17 +1,19 @@
 #+ include = FALSE, purl = FALSE, eval = FALSE
 ###############################################################################
 ###                                                                         ###
-###          Script to calculate SGPs for 2022 Georgia WIDA-ACCESS          ###
+###          Script to calculate SGPs for 2023 Georgia WIDA-ACCESS          ###
 ###                                                                         ###
 ###############################################################################
 
 ###   Load required packages
-require(SGP)
 require(data.table)
+require(SGP)
 
-###   Load SGP object from 2021 analyses and 2022 cleaned/prepped long data
+###   Load SGP object from 2021 analyses and 2023 cleaned/prepped long data
 load("Data/WIDA_GA_SGP.Rdata")
-load("Data/WIDA_GA_Data_LONG_2022.Rdata")
+load("Data/WIDA_GA_Data_LONG_2023.Rdata")
+
+WIDA_GA_SGP@Data[, ID_CHECK := NULL]
 
 ###   Add baseline matrices to `SGPstateData`
 SGPstateData <-
@@ -26,7 +28,7 @@ SGPstateData <-
 WIDA_GA_SGP <-
     updateSGP(
         what_sgp_object = WIDA_GA_SGP,
-        with_sgp_data_LONG = WIDA_GA_Data_LONG_2022,
+        with_sgp_data_LONG = WIDA_GA_Data_LONG_2023,
         steps = c(
             "prepareSGP", "analyzeSGP", "combineSGP",
             "visualizeSGP", "outputSGP"
@@ -38,16 +40,25 @@ WIDA_GA_SGP <-
         parallel.config = list(
             BACKEND = "PARALLEL",
             WORKERS = list(
-                PERCENTILES = 12,
-                PROJECTIONS = 6,
-                LAGGED_PROJECTIONS = 4,
-                SGP_SCALE_SCORE_TARGETS = 4
+                PERCENTILES = 11,
+                PROJECTIONS = 11,
+                LAGGED_PROJECTIONS = 11,
+                SGP_SCALE_SCORE_TARGETS = 11
             )
         )
     )
 
+#+ include = FALSE, purl = FALSE, eval = FALSE
 ###   Save results
 save(WIDA_GA_SGP, file = "Data/WIDA_GA_SGP.Rdata")
+
+###  Re-print SVGs from Mac - bad font in Linux...
+# gofPrint(
+#     sgp_object = WIDA_GA_SGP,
+#     years = "2023",
+#     output_format = "SVG",
+#     output_path = "Goodness_of_Fit"
+# )
 
 
 #' ### Conduct SGP analyses
@@ -93,7 +104,7 @@ save(WIDA_GA_SGP, file = "Data/WIDA_GA_SGP.Rdata")
 #'
 #' #### Custom data formatting and district output
 #' 
-#' The 2022 WIDA ACCESS for ELLs SGP results data were submitted to GaDOE with
+#' The 2023 WIDA ACCESS for ELLs SGP results data were submitted to GaDOE with
 #' additional formatting to add fields including students' prior language
 #' proficiency level.
 #' 
