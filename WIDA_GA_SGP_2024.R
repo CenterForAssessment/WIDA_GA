@@ -47,6 +47,17 @@ WIDA_GA_SGP <-
     )
 
 #+ include = FALSE, purl = FALSE, eval = FALSE
+###   Add R session Info & Save results (`cfaDocs` version 0.0-1.12 or later)
+source(
+    system.file(
+        "rmarkdown", "shared_resources", "rmd", "R_Session_Info.R",
+        package = "cfaDocs"
+    )
+)
+WIDA_GA_SGP@Version$session_platform <- list("2024" = session_platform)
+WIDA_GA_SGP@Version$attached_pkgs <- list("2024" = attached_pkgs)
+WIDA_GA_SGP@Version$namespace_pkgs<-  list("2024" = namespace_pkgs)
+
 ###   Save results
 save(WIDA_GA_SGP, file = "Data/WIDA_GA_SGP.Rdata")
 
