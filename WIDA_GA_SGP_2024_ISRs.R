@@ -9,7 +9,8 @@ require(data.table)
 require(SGP)
 
 ###   Load Data
-load("Data/WIDA_GA_SGP.Rdata")
+# load("Data/WIDA_GA_SGP.Rdata")
+load('/Users/avi/SGP Dropbox/Adam Van Iwaarden/SGP/WIDA_GA/Data/WIDA_GA_SGP.Rdata')
 
 ###   Define 2024 ISR directory
 isr_dir_24 <- "Visualizations/studentGrowthPlots/School/2024"
@@ -18,21 +19,30 @@ isr_dir_24 <- "Visualizations/studentGrowthPlots/School/2024"
 ##    Only produce ISRs for students with SGPs
 isr.ids <-
     WIDA_GA_SGP@Data[YEAR == "2024" & !is.na(SGP), ID] # (!is.na(SGP) | GRADE == "0")
-WIDA_GA_SGP@Data[!ID %in% isr.ids, VALID_CASE := "INVALID_CASE"]
-##    See "Projects/WIDA_GA/misc/Feedback and Questions 9_6_2023.docx"
-##    for code/requested student to remove
 
+WIDA_GA_SGP@Data[!ID %in% isr.ids, VALID_CASE := "INVALID_CASE"]
 
 ###   Remove some duplicates (wrong GTID!)
+##    One known case to fix in 2024
+WIDA_GA_SGP@Data[
+    ID == "9274465865" & YEAR == "2023" & BIRTH_DATE == "08/15/2006",
+      VALID_CASE := "INVALID_CASE"
+]
+
 setkey(WIDA_GA_SGP@Data, VALID_CASE, CONTENT_AREA, YEAR, ID, SCALE_SCORE)
 setkey(WIDA_GA_SGP@Data, VALID_CASE, CONTENT_AREA, YEAR, ID)
-WIDA_GA_SGP@Data[
-    which(duplicated(WIDA_GA_SGP@Data, by = key(WIDA_GA_SGP@Data))) - 1,
-        VALID_CASE := "INVALID_CASE"]
+dupl <-
+    duplicated(WIDA_GA_SGP@Data, by = key(WIDA_GA_SGP@Data))
+sum(dupl) # 661 CROSS-GRADE duplicates - (take the record with the HIGHEST score)
+WIDA_GA_SGP@Data[which(dupl) - 1, VALID_CASE := "INVALID_CASE"]
 setkey(WIDA_GA_SGP@Data, VALID_CASE, CONTENT_AREA, YEAR, ID)
 
-###   Modify data for ISR production
-WIDA_GA_SGP@Data <- WIDA_GA_SGP@Data[VALID_CASE == "VALID_CASE", ]
+###   Filter and modify data for ISR production
+WIDA_GA_SGP@Data <-
+    WIDA_GA_SGP@Data[
+        VALID_CASE == "VALID_CASE" &
+        YEAR >= 2022,
+    ]
 
 ##    Clean DISTRICT_NUMBER
 WIDA_GA_SGP@Data[, DISTRICT_NUMBER := gsub("GA0000", "", DISTRICT_NUMBER)]
@@ -115,13 +125,13 @@ setnames(WIDA_GA_SGP@Data,
          c("ACH_LEV_ACTUAL", "ACHIEVEMENT_LEVEL")
 )
 
-visualizeSGP(      
+visualizeSGP(
     WIDA_GA_SGP,
     plot.types = "studentGrowthPlot",
     sgPlot.years = "2024",
-    # sgPlot.produce.plots=FALSE, # Get wide district data ONLY
     # sgPlot.demo.report = TRUE,
-    sgPlot.districts = "633", # Cobb County
+    # sgPlot.produce.plots=FALSE, # Get wide district data ONLY
+    # sgPlot.districts = "644", # c("633", "687"),  #  DeKalb :: Cobb and Laurens
     sgPlot.save.sgPlot.data = TRUE,
     sgPlot.zip = FALSE,
     parallel.config = list(
@@ -193,7 +203,7 @@ visualizeSGP(
     plot.types = "studentGrowthPlot",
     sgPlot.years = "2024",
     # sgPlot.demo.report = TRUE,
-    sgPlot.districts = "633",
+    # sgPlot.districts = "644", # c("633", "687"),  #  DeKalb :: Cobb and Laurens
     sgPlot.zip = FALSE,
     parallel.config = list(
         BACKEND = "PARALLEL",
@@ -237,14 +247,14 @@ unlink(
 
 require(openxlsx)
 
-load("WIDA_Ga_studentGrowthPlot_Data.Rdata")
-WIDA_GA_ISR_Data <- copy(WIDA_Ga_studentGrowthPlot_Data)
+load("Visualizations/studentGrowthPlots/WIDA_Ga_studentGrowthPlot_Data.Rdata")
+ISR_Data <- copy(WIDA_Ga_studentGrowthPlot_Data)
 
 ##    Remove redundant and unneeded variables
-years.to.remove <- 2020:2022
+years.to.remove <- 2022 # only second prior needs removed - object trimmed above
 vars.to.remove <-
-    c(grep("CONTENT_AREA", names(WIDA_GA_ISR_Data), value = TRUE),
-      grep("TRANSFORMED", names(WIDA_GA_ISR_Data), value = TRUE),
+    c(grep("CONTENT_AREA", names(ISR_Data), value = TRUE),
+      grep("TRANSFORMED", names(ISR_Data), value = TRUE),
       "GRADE", paste0("GRADE.", years.to.remove),
       paste0("SCALE_SCORE.", years.to.remove),
       paste0("ACHIEVEMENT_LEVEL.", years.to.remove),
@@ -255,7 +265,7 @@ vars.to.remove <-
       "P66_PROJ_YEAR_1_CURRENT", "P99_PROJ_YEAR_1_CURRENT" # might keep next year
     )
 
-WIDA_GA_ISR_Data[,
+ISR_Data[,
     (vars.to.remove)  := NULL
 ][, REPORTED_SCH_YEAR := "2024"
 ]
@@ -272,19 +282,19 @@ col.ord <-
       "SGP.2024", "SGP_LEVEL.2024" # No prior (in 2023 and 2024 formatting)
     )
 
-setcolorder(WIDA_GA_ISR_Data, col.ord)
+setcolorder(ISR_Data, col.ord)
 
-setnames(WIDA_GA_ISR_Data,
-         gsub("[.]2024", "", names(WIDA_GA_ISR_Data))
+setnames(ISR_Data,
+         gsub("[.]2024", "", names(ISR_Data))
 )
-setnames(WIDA_GA_ISR_Data,
-         gsub("[.]2023", "_PRIOR", names(WIDA_GA_ISR_Data))
+setnames(ISR_Data,
+         gsub("[.]2023", "_PRIOR", names(ISR_Data))
 )
-setnames(WIDA_GA_ISR_Data, "ID", "GTID")
+setnames(ISR_Data, "ID", "GTID")
 
-WIDA_GA_ISR_Data[, c("SGP_PRIOR", "SGP_LEVEL_PRIOR") := NULL]
+ISR_Data[, c("SGP_PRIOR", "SGP_LEVEL_PRIOR") := NULL]
 
-setkey(WIDA_GA_ISR_Data, DISTRICT_NUMBER, SCHOOL_NUMBER)
+setkey(ISR_Data, DISTRICT_NUMBER, SCHOOL_NUMBER)
 
 ###   Create workbooks
 dist.dat.path <- file.path(isr_dir_24, "District_Data")
@@ -302,7 +312,7 @@ hs1 <-
     )
 
 ##    Create File Layout (base) workbook
-file_layout <- read.xlsx("ACCESS SGP System Data Layout.xlsx")
+file_layout <- read.xlsx("Data/ACCESS SGP System Data Layout.xlsx")
 # file_layout <- read.xlsx("District Data File Layout ACCESS SGP.xlsx")
 names(file_layout) <- gsub("[.]", " ", names(file_layout))
 layout.tab <- "ACCESS SGP Data File Layout"
@@ -314,9 +324,9 @@ setColWidths(base_wb, layout.tab, cols = c(1, 2, 5, 6), widths = c(12, 25, 20, 8
 
 writeData(base_wb, layout.tab, file_layout, headerStyle = hs1)
 
-for (tmp.dist in unique(WIDA_GA_ISR_Data[, DISTRICT_NUMBER])) {
+for (tmp.dist in unique(ISR_Data[, DISTRICT_NUMBER])) {
     tmp.data <-
-        WIDA_GA_ISR_Data[DISTRICT_NUMBER == tmp.dist]
+        ISR_Data[DISTRICT_NUMBER == tmp.dist]
 
     if (grepl("^782|^783", tmp.dist)) {
         tmp.dist <-
